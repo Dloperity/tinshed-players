@@ -8,8 +8,13 @@
 
 <form method="get" class="mb-3 d-flex gap-2">
   <input type="text" name="q" class="form-control" placeholder="Search by name..." value="{{ query or '' }}">
-  <button type="submit" class="btn btn-outline-secondary">Search</button>
-  {% if query %}
+  <select name="status" class="form-select" style="width: 150px;">
+    <option value="">All Status</option>
+    <option value="active" {% if status=='active' %}selected{% endif %}>Active</option>
+    <option value="inactive" {% if status=='inactive' %}selected{% endif %}>Inactive</option>
+  </select>
+  <button type="submit" class="btn btn-outline-secondary">Filter</button>
+  {% if query or status %}
   <a href="{{ url_for('volunteers.list_volunteers') }}" class="btn btn-link">Clear</a>
   {% endif %}
 </form>
