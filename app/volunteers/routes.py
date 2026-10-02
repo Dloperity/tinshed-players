@@ -8,11 +8,18 @@ bp = Blueprint("volunteers", __name__)
 @bp.route("/volunteers")
 def list_volunteers():
     query = request.args.get("q", "").strip()
+    status = request.args.get("status", "").strip()
+    
+    volunteers_query = Volunteer.query
     if query:
-        volunteers = Volunteer.query.filter(Volunteer.name.ilike(f"%{query}%")).order_by(Volunteer.name).all()
-    else:
-        volunteers = Volunteer.query.order_by(Volunteer.name).all()
-    return render_template("volunteers/list.html", volunteers=volunteers, query=query)
+        volunteers_query = volunteers_query.filter(Volunteer.name.ilike(f"%{query}%"))
+    if status == "active":
+        volunteers_query = volunteers_query.filter(Volunteer.is_active == True)
+    elif status == "inactive":
+        volunteers_query = volunteers_query.filter(Volunteer.is_active == False)
+        
+    volunteers = volunteers_query.order_by(Volunteer.name).all()
+    return render_template("volunteers/list.html", volunteers=volunteers, query=query, status=status)
 
 
 @bp.route("/volunteers/new", methods=["GET", "POST"])
