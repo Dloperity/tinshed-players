@@ -29,6 +29,22 @@ def create_volunteer():
     return render_template("volunteers/form.html")
 
 
+@bp.route("/volunteers/<int:volunteer_id>/edit", methods=["GET", "POST"])
+def edit_volunteer(volunteer_id):
+    volunteer = db.get_or_404(Volunteer, volunteer_id)
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Name is required.", "error")
+            return render_template("volunteers/form.html", volunteer=volunteer), 400
+        volunteer.name = name
+        volunteer.email = request.form.get("email", "").strip() or None
+        volunteer.phone = request.form.get("phone", "").strip() or None
+        db.session.commit()
+        return redirect(url_for("volunteers.list_volunteers"))
+    return render_template("volunteers/form.html", volunteer=volunteer)
+
+
 @bp.route("/volunteers/<int:volunteer_id>/toggle", methods=["POST"])
 def toggle_volunteer(volunteer_id):
     volunteer = db.get_or_404(Volunteer, volunteer_id)
