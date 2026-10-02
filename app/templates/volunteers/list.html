@@ -13,7 +13,7 @@
     <option value="active" {% if status=='active' %}selected{% endif %}>Active</option>
     <option value="inactive" {% if status=='inactive' %}selected{% endif %}>Inactive</option>
   </select>
-  <button type="submit" class="btn btn-outline-secondary">Filter</button>
+  <button type="submit" class="btn btn-outline-secondary">Search</button>
   {% if query or status %}
   <a href="{{ url_for('volunteers.list_volunteers') }}" class="btn btn-link">Clear</a>
   {% endif %}
