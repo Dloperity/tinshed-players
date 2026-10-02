@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Roster · Tinshed Players{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Roster</h1>
+  <a href="{{ url_for('assignments.list_assignments') }}" class="btn btn-outline-secondary">Back to assignments</a>
+</div>
+
+{% for perf in performances %}
+<div class="card mb-3">
+  <div class="card-header">
+    {{ perf.production.title }} — {{ perf.date.strftime('%d %b %Y') }} {{ perf.start_time.strftime('%H:%M') }}
+  </div>
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr><th>Role</th><th>Volunteer</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for a in perf.assignments %}
+        <tr>
+          <td>{{ a.role }}</td>
+          <td>{{ a.volunteer.name }}</td>
+          <td>{{ a.status }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-muted">No one assigned yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<p class="text-muted">No performances scheduled yet.</p>
+{% endfor %}
+{% endblock %}
