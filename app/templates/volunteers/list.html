@@ -5,6 +5,15 @@
   <h1 class="h3">Volunteers</h1>
   <a href="{{ url_for('volunteers.create_volunteer') }}" class="btn btn-primary">Add volunteer</a>
 </div>
+
+<form method="get" class="mb-3 d-flex gap-2">
+  <input type="text" name="q" class="form-control" placeholder="Search by name..." value="{{ query or '' }}">
+  <button type="submit" class="btn btn-outline-secondary">Search</button>
+  {% if query %}
+  <a href="{{ url_for('volunteers.list_volunteers') }}" class="btn btn-link">Clear</a>
+  {% endif %}
+</form>
+
 <table class="table table-striped">
   <thead>
     <tr>
