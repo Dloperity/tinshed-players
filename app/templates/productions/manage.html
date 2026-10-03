@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Manage {{ production.title }} · Tinshed Players{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-1">Manage {{ production.title }}</h1>
+    <p class="text-muted mb-0">A2 production-management extension</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('productions.production_detail', production_id=production.id) }}">Back to production</a>
+</div>
+
+<p><a class="btn btn-outline-primary" href="{{ url_for('productions.edit_production_title', production_id=production.id) }}">Edit production title</a></p>
+
+{% for performance in production.performances %}
+<section class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h2 class="h5">{{ performance.date.strftime('%d %b %Y') }} at {{ performance.start_time.strftime('%H:%M') }}</h2>
+        <ul class="mb-0">
+          {% for crew_call in performance.crew_calls %}
+          <li>
+            {{ crew_call.role }}: {{ crew_call.count }} required
+            <a href="{{ url_for('productions.edit_crew_call', production_id=production.id, performance_id=performance.id, crew_call_id=crew_call.id) }}">Edit requirement</a>
+          </li>
+          {% else %}
+          <li class="text-muted">No crew-call requirements recorded.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <form method="post" action="{{ url_for('productions.delete_managed_performance', production_id=production.id, performance_id=performance.id) }}">
+        <button class="btn btn-sm btn-outline-danger">Delete performance</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% else %}
+<p class="text-muted">No performances yet.</p>
+{% endfor %}
+{% endblock %}

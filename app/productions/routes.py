@@ -55,3 +55,90 @@ def create_performance(production_id):
         db.session.commit()
         return redirect(url_for("productions.production_detail", production_id=production.id))
     return render_template("productions/performance_form.html", production=production)
+
+
+# Non-destructive A2 extension: existing routes above remain unchanged.
+@bp.route("/productions/<int:production_id>/manage")
+def manage_production(production_id):
+    production = db.get_or_404(Production, production_id)
+    return render_template("productions/manage.html", production=production)
+
+
+@bp.route("/productions/<int:production_id>/edit-title", methods=["GET", "POST"])
+def edit_production_title(production_id):
+    production = db.get_or_404(Production, production_id)
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        if not title:
+            flash("Title is required.", "error")
+            return render_template("productions/edit_title.html", production=production), 400
+        production.title = title
+        db.session.commit()
+        flash("Production title updated.")
+        return redirect(url_for("productions.manage_production", production_id=production.id))
+    return render_template("productions/edit_title.html", production=production)
+
+
+@bp.route(
+    "/productions/<int:production_id>/performances/<int:performance_id>/delete",
+    methods=["POST"],
+)
+def delete_managed_performance(production_id, performance_id):
+    production = db.get_or_404(Production, production_id)
+    performance = db.get_or_404(Performance, performance_id)
+    if performance.production_id != production.id:
+        return "Performance not found for this production.", 404
+
+    db.session.delete(performance)
+    db.session.commit()
+    flash("Performance deleted.")
+    return redirect(url_for("productions.manage_production", production_id=production.id))
+
+
+@bp.route(
+    "/productions/<int:production_id>/performances/<int:performance_id>/crew-calls/<int:crew_call_id>/edit",
+    methods=["GET", "POST"],
+)
+def edit_crew_call(production_id, performance_id, crew_call_id):
+    production = db.get_or_404(Production, production_id)
+    performance = db.get_or_404(Performance, performance_id)
+    crew_call = db.get_or_404(CrewCall, crew_call_id)
+    if performance.production_id != production.id or crew_call.performance_id != performance.id:
+        return "Crew call not found for this performance.", 404
+
+    if request.method == "POST":
+        role = request.form.get("role", "").strip()
+        try:
+            count = int(request.form.get("count", ""))
+        except (TypeError, ValueError):
+            count = 0
+
+        if not role:
+            flash("Role is required.", "error")
+            return render_template(
+                "productions/edit_crew_call.html",
+                production=production,
+                performance=performance,
+                crew_call=crew_call,
+            ), 400
+        if count < 1:
+            flash("Required crew count must be at least 1.", "error")
+            return render_template(
+                "productions/edit_crew_call.html",
+                production=production,
+                performance=performance,
+                crew_call=crew_call,
+            ), 400
+
+        crew_call.role = role
+        crew_call.count = count
+        db.session.commit()
+        flash("Crew call updated.")
+        return redirect(url_for("productions.manage_production", production_id=production.id))
+
+    return render_template(
+        "productions/edit_crew_call.html",
+        production=production,
+        performance=performance,
+        crew_call=crew_call,
+    )

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Edit crew call · Tinshed Players{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Edit crew-call requirement</h1>
+<p class="text-muted">{{ production.title }} — {{ performance.date.strftime('%d %b %Y') }} {{ performance.start_time.strftime('%H:%M') }}</p>
+<form method="post" class="col-md-6">
+  <div class="mb-3">
+    <label class="form-label" for="role">Role *</label>
+    <input class="form-control" id="role" name="role" required value="{{ crew_call.role }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="count">Required volunteers *</label>
+    <input class="form-control" id="count" name="count" type="number" min="1" required value="{{ crew_call.count }}">
+  </div>
+  <button class="btn btn-primary" type="submit">Save requirement</button>
+  <a class="btn btn-link" href="{{ url_for('productions.manage_production', production_id=production.id) }}">Cancel</a>
+</form>
+{% endblock %}
