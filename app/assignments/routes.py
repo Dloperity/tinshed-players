@@ -7,8 +7,24 @@ bp = Blueprint("assignments", __name__)
 
 @bp.route("/assignments")
 def list_assignments():
-    assignments = Assignment.query.order_by(Assignment.id.desc()).all()
-    return render_template("assignments/list.html", assignments=assignments)
+    query = Assignment.query
+    performance_id = request.args.get("performance_id", type=int)
+    volunteer_id = request.args.get("volunteer_id", type=int)
+    if performance_id:
+        query = query.filter(Assignment.performance_id == performance_id)
+    if volunteer_id:
+        query = query.filter(Assignment.volunteer_id == volunteer_id)
+    assignments = query.order_by(Assignment.id.desc()).all()
+    volunteers = Volunteer.query.order_by(Volunteer.name).all()
+    performances = Performance.query.order_by(Performance.date, Performance.start_time).all()
+    return render_template(
+        "assignments/list.html",
+        assignments=assignments,
+        volunteers=volunteers,
+        performances=performances,
+        filter_performance=performance_id,
+        filter_volunteer=volunteer_id,
+    )
 
 
 @bp.route("/assignments/new", methods=["GET", "POST"])
@@ -53,3 +69,17 @@ def delete_assignment(assignment_id):
     db.session.delete(assignment)
     db.session.commit()
     return redirect(url_for("assignments.list_assignments"))
+
+
+@bp.route("/assignments/<int:assignment_id>/toggle-status", methods=["POST"])
+def toggle_status(assignment_id):
+    assignment = db.get_or_404(Assignment, assignment_id)
+    assignment.status = "confirmed" if assignment.status == "unconfirmed" else "unconfirmed"
+    db.session.commit()
+    return redirect(url_for("assignments.list_assignments"))
+
+
+@bp.route("/assignments/roster")
+def roster():
+    performances = Performance.query.order_by(Performance.date, Performance.start_time).all()
+    return render_template("assignments/roster.html", performances=performances)
