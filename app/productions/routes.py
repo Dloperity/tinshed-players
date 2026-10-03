@@ -142,3 +142,48 @@ def edit_crew_call(production_id, performance_id, crew_call_id):
         performance=performance,
         crew_call=crew_call,
     )
+
+
+
+
+# Additional A2 extension: performance schedule editing without changing
+# the original production routes or templates.
+@bp.route("/productions/<int:production_id>/schedule")
+def production_schedule(production_id):
+    production = db.get_or_404(Production, production_id)
+    return render_template("productions/schedule.html", production=production)
+
+
+@bp.route(
+    "/productions/<int:production_id>/performances/<int:performance_id>/edit-schedule",
+    methods=["GET", "POST"],
+)
+def edit_performance_schedule(production_id, performance_id):
+    production = db.get_or_404(Production, production_id)
+    performance = db.get_or_404(Performance, performance_id)
+    if performance.production_id != production.id:
+        return "Performance not found for this production.", 404
+
+    if request.method == "POST":
+        try:
+            date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+            start_time = datetime.strptime(request.form["start_time"], "%H:%M").time()
+        except (KeyError, ValueError):
+            flash("Date and start time are required (YYYY-MM-DD, HH:MM).", "error")
+            return render_template(
+                "productions/edit_performance_schedule.html",
+                production=production,
+                performance=performance,
+            ), 400
+
+        performance.date = date
+        performance.start_time = start_time
+        db.session.commit()
+        flash("Performance schedule updated.")
+        return redirect(url_for("productions.production_schedule", production_id=production.id))
+
+    return render_template(
+        "productions/edit_performance_schedule.html",
+        production=production,
+        performance=performance,
+    )
