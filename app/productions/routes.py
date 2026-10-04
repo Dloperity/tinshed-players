@@ -187,3 +187,70 @@ def edit_performance_schedule(production_id, performance_id):
         production=production,
         performance=performance,
     )
+
+
+# Additional A2 extension: manage crew-call requirements on existing
+# performances without altering earlier routes or pages.
+@bp.route("/productions/<int:production_id>/crew-calls")
+def manage_crew_calls(production_id):
+    production = db.get_or_404(Production, production_id)
+    return render_template("productions/crew_calls.html", production=production)
+
+
+@bp.route(
+    "/productions/<int:production_id>/performances/<int:performance_id>/crew-calls/new",
+    methods=["POST"],
+)
+def create_crew_call(production_id, performance_id):
+    production = db.get_or_404(Production, production_id)
+    performance = db.get_or_404(Performance, performance_id)
+    if performance.production_id != production.id:
+        return "Performance not found for this production.", 404
+
+    role = request.form.get("role", "").strip()
+    try:
+        count = int(request.form.get("count", ""))
+    except (TypeError, ValueError):
+        count = 0
+
+    if not role or len(role) > 80:
+        flash("Role is required and must be 80 characters or fewer.", "error")
+        return render_template("productions/crew_calls.html", production=production), 400
+    if count < 1:
+        flash("Required crew count must be at least 1.", "error")
+        return render_template("productions/crew_calls.html", production=production), 400
+
+    db.session.add(CrewCall(performance=performance, role=role, count=count))
+    db.session.commit()
+    flash("Crew requirement added.")
+    return redirect(url_for("productions.manage_crew_calls", production_id=production.id))
+
+
+@bp.route(
+    "/productions/<int:production_id>/performances/<int:performance_id>/crew-calls/<int:crew_call_id>/delete",
+    methods=["POST"],
+)
+def delete_crew_call(production_id, performance_id, crew_call_id):
+    from app.models import Assignment
+
+    production = db.get_or_404(Production, production_id)
+    performance = db.get_or_404(Performance, performance_id)
+    crew_call = db.get_or_404(CrewCall, crew_call_id)
+    if performance.production_id != production.id or crew_call.performance_id != performance.id:
+        return "Crew call not found for this performance.", 404
+
+    linked_assignments = Assignment.query.filter_by(
+        performance_id=performance.id,
+        role=crew_call.role,
+    ).count()
+    if linked_assignments:
+        flash(
+            "Remove assignments for this role before deleting its crew requirement.",
+            "error",
+        )
+        return render_template("productions/crew_calls.html", production=production), 409
+
+    db.session.delete(crew_call)
+    db.session.commit()
+    flash("Crew requirement deleted.")
+    return redirect(url_for("productions.manage_crew_calls", production_id=production.id))
