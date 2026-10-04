@@ -1,6 +1,6 @@
 from datetime import date, time
 
-from app.models import Assignment, Performance, db
+from app.models import Assignment, Performance, Volunteer, db
 
 
 def test_assign_volunteer(client, seed):
@@ -160,3 +160,90 @@ def test_roster_groups_assignments_by_performance(client, seed):
     assert response.status_code == 200
     assert b"Box Office" in response.data
     assert b"No one assigned yet." not in response.data
+
+
+def test_edit_assignment_updates_role(client, app, seed):
+    client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Box Office",
+        },
+    )
+    with app.app_context():
+        assignment_id = Assignment.query.first().id
+
+    response = client.post(
+        f"/assignments/{assignment_id}/edit",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Front of House",
+        },
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert b"Front of House" in response.data
+    with app.app_context():
+        assert db.session.get(Assignment, assignment_id).role == "Front of House"
+
+
+def test_edit_cannot_move_into_a_clashing_performance(client, app, seed):
+    with app.app_context():
+        other = Performance(
+            production=seed["production"],
+            date=date(2026, 9, 12),
+            start_time=time(19, 30),
+        )
+        db.session.add(other)
+        db.session.commit()
+        other_id = other.id
+
+    client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Box Office",
+        },
+    )
+    client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": other_id,
+            "role": "Bar",
+        },
+    )
+    with app.app_context():
+        movable_id = Assignment.query.filter_by(performance_id=other_id).first().id
+
+    response = client.post(
+        f"/assignments/{movable_id}/edit",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Bar",
+        },
+    )
+    assert response.status_code == 409
+    assert b"Refused" in response.data
+
+
+def test_inactive_volunteer_cannot_be_assigned(client, app, seed):
+    with app.app_context():
+        volunteer = db.session.get(Volunteer, seed["volunteer"].id)
+        volunteer.is_active = False
+        db.session.commit()
+
+    response = client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Box Office",
+        },
+    )
+    assert response.status_code == 400
+    assert b"active volunteer" in response.data

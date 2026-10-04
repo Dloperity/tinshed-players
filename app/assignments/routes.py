@@ -43,6 +43,11 @@ def create_assignment():
             flash("Role is required.", "error")
             return render_template("assignments/form.html", volunteers=volunteers, performances=performances), 400
 
+        volunteer = db.session.get(Volunteer, volunteer_id)
+        if volunteer is None or not volunteer.is_active:
+            flash("Select an active volunteer.", "error")
+            return render_template("assignments/form.html", volunteers=volunteers, performances=performances), 400
+
         if find_assignment(volunteer_id, performance_id) is not None:
             flash(
                 "Refused: this volunteer already holds a role in that performance "
@@ -83,3 +88,47 @@ def toggle_status(assignment_id):
 def roster():
     performances = Performance.query.order_by(Performance.date, Performance.start_time).all()
     return render_template("assignments/roster.html", performances=performances)
+
+
+@bp.route("/assignments/<int:assignment_id>/edit", methods=["GET", "POST"])
+def edit_assignment(assignment_id):
+    assignment = db.get_or_404(Assignment, assignment_id)
+    volunteers = Volunteer.query.filter_by(is_active=True).order_by(Volunteer.name).all()
+    performances = Performance.query.order_by(Performance.date, Performance.start_time).all()
+    context = {
+        "assignment": assignment,
+        "volunteers": volunteers,
+        "performances": performances,
+    }
+    if request.method == "POST":
+        try:
+            volunteer_id = int(request.form["volunteer_id"])
+            performance_id = int(request.form["performance_id"])
+        except (KeyError, ValueError):
+            flash("Volunteer and performance are required.", "error")
+            return render_template("assignments/edit.html", **context), 400
+        role = request.form.get("role", "").strip()
+        if not role:
+            flash("Role is required.", "error")
+            return render_template("assignments/edit.html", **context), 400
+
+        volunteer = db.session.get(Volunteer, volunteer_id)
+        if volunteer is None or not volunteer.is_active:
+            flash("Select an active volunteer.", "error")
+            return render_template("assignments/edit.html", **context), 400
+
+        clash = find_assignment(volunteer_id, performance_id)
+        if clash is not None and clash.id != assignment.id:
+            flash(
+                "Refused: this volunteer already holds a role in that performance "
+                "(one role per performance).",
+                "error",
+            )
+            return render_template("assignments/edit.html", **context), 409
+
+        assignment.volunteer_id = volunteer_id
+        assignment.performance_id = performance_id
+        assignment.role = role
+        db.session.commit()
+        return redirect(url_for("assignments.list_assignments"))
+    return render_template("assignments/edit.html", **context)
