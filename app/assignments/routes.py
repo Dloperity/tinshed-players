@@ -77,3 +77,9 @@ def toggle_status(assignment_id):
     assignment.status = "confirmed" if assignment.status == "unconfirmed" else "unconfirmed"
     db.session.commit()
     return redirect(url_for("assignments.list_assignments"))
+
+
+@bp.route("/assignments/roster")
+def roster():
+    performances = Performance.query.order_by(Performance.date, Performance.start_time).all()
+    return render_template("assignments/roster.html", performances=performances)

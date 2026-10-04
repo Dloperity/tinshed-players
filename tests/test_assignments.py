@@ -144,3 +144,19 @@ def test_toggle_status_confirms_assignment(client, app, seed):
     assert response.status_code == 200
     with app.app_context():
         assert db.session.get(Assignment, assignment_id).status == "confirmed"
+
+
+def test_roster_groups_assignments_by_performance(client, seed):
+    client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Box Office",
+        },
+    )
+
+    response = client.get("/assignments/roster")
+    assert response.status_code == 200
+    assert b"Box Office" in response.data
+    assert b"No one assigned yet." not in response.data
