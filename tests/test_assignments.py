@@ -105,3 +105,22 @@ def test_delete_assignment_leaves_position_open(client, app, seed):
     response = client.post(f"/assignments/{assignment_id}/delete", follow_redirects=True)
     assert response.status_code == 200
     assert b"No assignments yet." in response.data
+
+
+def test_filter_assignments_by_performance(client, seed):
+    client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Box Office",
+        },
+    )
+
+    matching = client.get(f"/assignments?performance_id={seed['performance'].id}")
+    assert matching.status_code == 200
+    assert b"Box Office" in matching.data
+
+    other = client.get("/assignments?performance_id=999999")
+    assert other.status_code == 200
+    assert b"Box Office" not in other.data

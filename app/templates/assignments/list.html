@@ -5,6 +5,34 @@
   <h1 class="h3">Assignments</h1>
   <a href="{{ url_for('assignments.create_assignment') }}" class="btn btn-primary">New assignment</a>
 </div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <select class="form-select" name="performance_id">
+      <option value="">All performances</option>
+      {% for perf in performances %}
+      <option value="{{ perf.id }}" {{ 'selected' if filter_performance == perf.id }}>
+        {{ perf.production.title }} — {{ perf.date.strftime('%d %b %Y') }} {{ perf.start_time.strftime('%H:%M') }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select class="form-select" name="volunteer_id">
+      <option value="">All volunteers</option>
+      {% for v in volunteers %}
+      <option value="{{ v.id }}" {{ 'selected' if filter_volunteer == v.id }}>{{ v.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-primary">Filter</button>
+    {% if filter_performance or filter_volunteer %}
+    <a class="btn btn-link" href="{{ url_for('assignments.list_assignments') }}">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
 <table class="table table-striped">
   <thead>
     <tr><th>Volunteer</th><th>Performance</th><th>Role</th><th>Status</th><th></th></tr>
