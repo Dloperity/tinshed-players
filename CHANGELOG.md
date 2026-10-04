@@ -8,6 +8,12 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Assignment editing (`GET/POST /assignments/<id>/edit`) with an Edit action on the assignment list, a
+  dedicated edit template, a guard that refuses to move a volunteer into a performance where they
+  already hold a role, and a guard that rejects inactive volunteers.
+- `seed.py`, a small demo-data script for manual testing and screenshots.
+
 ### Planned (A3)
 - Coverage-gap view that highlights crew-call roles which are still unfilled for a performance
   (the `CrewCall(role, count)` model added in 0.1.0 is already in place to support this).

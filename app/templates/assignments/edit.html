@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}New assignment · Tinshed Players{% endblock %}
+{% block title %}Edit assignment · Tinshed Players{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">New assignment</h1>
+<h1 class="h3 mb-3">Edit assignment</h1>
 <form method="post">
   <div class="mb-3">
     <label class="form-label">Volunteer *</label>
     <select class="form-select" name="volunteer_id" required>
       {% for volunteer in volunteers %}
-      <option value="{{ volunteer.id }}">{{ volunteer.name }}</option>
+      <option value="{{ volunteer.id }}" {{ 'selected' if volunteer.id == assignment.volunteer_id }}>{{ volunteer.name }}</option>
       {% endfor %}
     </select>
   </div>
@@ -15,7 +15,7 @@
     <label class="form-label">Performance *</label>
     <select class="form-select" name="performance_id" required>
       {% for performance in performances %}
-      <option value="{{ performance.id }}" data-roles="{{ performance.crew_calls | map(attribute='role') | join(',') }}">
+      <option value="{{ performance.id }}" data-roles="{{ performance.crew_calls | map(attribute='role') | join(',') }}" {{ 'selected' if performance.id == assignment.performance_id }}>
         {{ performance.production.title }} — {{ performance.date.strftime('%d %b %Y') }} {{ performance.start_time.strftime('%H:%M') }}
       </option>
       {% endfor %}
@@ -23,7 +23,7 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Role *</label>
-    <input class="form-control" name="role" required list="role-options" placeholder="e.g. Sound Op">
+    <input class="form-control" name="role" required list="role-options" value="{{ assignment.role }}" placeholder="e.g. Sound Op">
     <datalist id="role-options"></datalist>
     <div class="form-text">Suggestions come from the selected performance's crew call.</div>
   </div>
