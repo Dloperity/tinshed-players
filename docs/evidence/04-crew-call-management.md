@@ -62,6 +62,16 @@ committed as `23007776a8fc6e42990d52107666c31c8c05ed93` on 2026-10-04 and pushed
 to the personal repository's `New-module-development` branch. The team
 repository `ThirstyCoco/tinshed-players` was not changed by that push.
 
-This record update is being made after publication to correct the handoff
-status while retaining the original sequence of events. It has not yet been
-committed or pushed.
+The publication-status correction in this record was committed as
+`ee8b49445c26a242e7a9e9bc939413ce2bf796ed` on 2026-10-04 and pushed to the same
+personal branch.
+
+## Integration validation
+
+On 2026-10-04, the personal source branch at `ee8b494` was merged without a
+commit into an isolated local worktree based on the proposed target branch
+`ThirstyCoco/tinshed-players:feature/productions-crewcall` at `95c00d9`.
+Git completed the merge automatically with no file conflicts. Running
+`python -m pytest -q` against the combined tree produced **36 passed** and 104
+SQLAlchemy `datetime.utcnow()` deprecation warnings. This was a local
+validation only; it did not modify the target branch on GitHub.
