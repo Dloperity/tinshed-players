@@ -1,19 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Add volunteer · Tinshed Players{% endblock %}
+{% block title %}{{ 'Edit' if volunteer else 'Add' }} volunteer · Tinshed Players{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">Add volunteer</h1>
+<h1 class="h3 mb-3">{{ 'Edit' if volunteer else 'Add' }} volunteer</h1>
 <form method="post">
   <div class="mb-3">
     <label class="form-label">Name *</label>
-    <input class="form-control" name="name" required>
+    <input class="form-control" name="name" required value="{{ volunteer.name if volunteer else '' }}">
   </div>
   <div class="mb-3">
     <label class="form-label">Email</label>
-    <input class="form-control" name="email" type="email">
+    <input class="form-control" name="email" type="email"
+      value="{{ volunteer.email if volunteer and volunteer.email else '' }}">
   </div>
   <div class="mb-3">
     <label class="form-label">Phone</label>
-    <input class="form-control" name="phone">
+    <input class="form-control" name="phone" value="{{ volunteer.phone if volunteer and volunteer.phone else '' }}">
   </div>
   <button class="btn btn-primary" type="submit">Save</button>
   <a class="btn btn-link" href="{{ url_for('volunteers.list_volunteers') }}">Cancel</a>

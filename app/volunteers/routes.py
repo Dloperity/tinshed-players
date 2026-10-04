@@ -7,8 +7,19 @@ bp = Blueprint("volunteers", __name__)
 
 @bp.route("/volunteers")
 def list_volunteers():
-    volunteers = Volunteer.query.order_by(Volunteer.name).all()
-    return render_template("volunteers/list.html", volunteers=volunteers)
+    query = request.args.get("q", "").strip()
+    status = request.args.get("status", "").strip()
+    
+    volunteers_query = Volunteer.query
+    if query:
+        volunteers_query = volunteers_query.filter(Volunteer.name.ilike(f"%{query}%"))
+    if status == "active":
+        volunteers_query = volunteers_query.filter(Volunteer.is_active == True)
+    elif status == "inactive":
+        volunteers_query = volunteers_query.filter(Volunteer.is_active == False)
+        
+    volunteers = volunteers_query.order_by(Volunteer.name).all()
+    return render_template("volunteers/list.html", volunteers=volunteers, query=query, status=status)
 
 
 @bp.route("/volunteers/new", methods=["GET", "POST"])
@@ -27,6 +38,22 @@ def create_volunteer():
         db.session.commit()
         return redirect(url_for("volunteers.list_volunteers"))
     return render_template("volunteers/form.html")
+
+
+@bp.route("/volunteers/<int:volunteer_id>/edit", methods=["GET", "POST"])
+def edit_volunteer(volunteer_id):
+    volunteer = db.get_or_404(Volunteer, volunteer_id)
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Name is required.", "error")
+            return render_template("volunteers/form.html", volunteer=volunteer), 400
+        volunteer.name = name
+        volunteer.email = request.form.get("email", "").strip() or None
+        volunteer.phone = request.form.get("phone", "").strip() or None
+        db.session.commit()
+        return redirect(url_for("volunteers.list_volunteers"))
+    return render_template("volunteers/form.html", volunteer=volunteer)
 
 
 @bp.route("/volunteers/<int:volunteer_id>/toggle", methods=["POST"])
