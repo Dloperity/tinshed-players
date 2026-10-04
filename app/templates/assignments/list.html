@@ -43,7 +43,12 @@
       <td>{{ assignment.volunteer.name }}</td>
       <td>{{ assignment.performance.date.strftime('%d %b %Y') }} {{ assignment.performance.start_time.strftime('%H:%M') }}</td>
       <td>{{ assignment.role }}</td>
-      <td>{{ assignment.status }}</td>
+      <td>
+        <span class="badge {{ 'bg-success' if assignment.status == 'confirmed' else 'bg-secondary' }}">{{ assignment.status }}</span>
+        <form method="post" action="{{ url_for('assignments.toggle_status', assignment_id=assignment.id) }}" class="d-inline">
+          <button class="btn btn-sm btn-outline-secondary">{{ 'Unconfirm' if assignment.status == 'confirmed' else 'Confirm' }}</button>
+        </form>
+      </td>
       <td>
         <form method="post" action="{{ url_for('assignments.delete_assignment', assignment_id=assignment.id) }}">
           <button class="btn btn-sm btn-outline-danger">Remove</button>

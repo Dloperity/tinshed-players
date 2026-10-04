@@ -124,3 +124,23 @@ def test_filter_assignments_by_performance(client, seed):
     other = client.get("/assignments?performance_id=999999")
     assert other.status_code == 200
     assert b"Box Office" not in other.data
+
+
+def test_toggle_status_confirms_assignment(client, app, seed):
+    client.post(
+        "/assignments/new",
+        data={
+            "volunteer_id": seed["volunteer"].id,
+            "performance_id": seed["performance"].id,
+            "role": "Box Office",
+        },
+    )
+    with app.app_context():
+        assignment_id = Assignment.query.first().id
+
+    response = client.post(
+        f"/assignments/{assignment_id}/toggle-status", follow_redirects=True
+    )
+    assert response.status_code == 200
+    with app.app_context():
+        assert db.session.get(Assignment, assignment_id).status == "confirmed"

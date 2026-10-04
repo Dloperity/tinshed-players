@@ -69,3 +69,11 @@ def delete_assignment(assignment_id):
     db.session.delete(assignment)
     db.session.commit()
     return redirect(url_for("assignments.list_assignments"))
+
+
+@bp.route("/assignments/<int:assignment_id>/toggle-status", methods=["POST"])
+def toggle_status(assignment_id):
+    assignment = db.get_or_404(Assignment, assignment_id)
+    assignment.status = "confirmed" if assignment.status == "unconfirmed" else "unconfirmed"
+    db.session.commit()
+    return redirect(url_for("assignments.list_assignments"))
