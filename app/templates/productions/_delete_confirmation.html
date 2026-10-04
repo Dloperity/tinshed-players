@@ -1,0 +1,9 @@
+<dialog class="delete-confirm-dialog" id="delete-confirm-dialog" aria-labelledby="delete-confirm-title" aria-describedby="delete-confirm-message">
+  <h2 class="h5" id="delete-confirm-title">Confirm deletion</h2>
+  <p id="delete-confirm-message"></p>
+  <div class="d-flex justify-content-end gap-2">
+    <button class="btn btn-outline-secondary" id="delete-confirm-no" type="button">No</button>
+    <button class="btn btn-danger" id="delete-confirm-yes" type="button">Yes</button>
+  </div>
+</dialog>
+<script defer src="{{ url_for('static', filename='js/delete-confirmation.js') }}"></script>

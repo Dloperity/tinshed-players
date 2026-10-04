@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Manage {{ production.title }} · Tinshed Players{% endblock %}
+{% block content %}
+{% include "productions/_control_assets.html" %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div><h1 class="h3">Manage production: {{ production.title }}</h1><a href="{{ url_for('productions.production_detail', production_id=production.id) }}">Back to production details</a></div>
+  <a class="btn btn-primary" href="{{ url_for('production_extensions.create_performance_enhanced', production_id=production.id) }}">Add performance</a>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}" role="status">{{ message }}</div>{% endfor %}{% endwith %}
+{% if error_message %}<p class="text-danger" role="alert">{{ error_message }}</p>{% endif %}
+<div class="d-flex gap-2 mb-3">
+  <a class="btn btn-outline-primary" href="{{ url_for('productions.edit_production_title', production_id=production.id) }}">Edit production title</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('production_extensions.manage_crew_calls_enhanced', production_id=production.id) }}">Manage crew calls</a>
+  <form method="post" action="{{ url_for('production_extensions.delete_production_enhanced', production_id=production.id) }}" data-confirm-delete data-confirm-message="{% if production_assignment_count %}Volunteers are assigned to performances in this production. Are you sure you want to delete this production?{% else %}Are you sure you want to delete this production?{% endif %}">
+    <input type="hidden" name="confirmed" value="no"><button class="btn btn-outline-danger" type="submit">Delete production</button>
+  </form>
+</div>
+<div class="table-responsive"><table class="table table-striped align-middle">
+  <thead><tr><th>Date</th><th>Time</th><th>Crew call</th><th>Volunteers assigned</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for performance in production.performances %}
+    <tr>
+      <td>{{ performance.date.strftime('%d %b %Y') }}</td>
+      <td>{% if performance.time_range %}{{ performance.time_range }}{% else %}{{ performance.start_time.strftime('%H:%M') }} (duration not set){% endif %}</td>
+      <td>{% for call in performance.crew_calls %}{{ call.role }} × {{ call.count }}{{ ', ' if not loop.last }}{% else %}<span class="text-muted">None</span>{% endfor %}</td>
+      <td>{{ performance_assignment_counts[performance.id] }}</td>
+      <td class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('production_extensions.edit_performance_enhanced', production_id=production.id, performance_id=performance.id) }}">Edit schedule</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('production_extensions.manage_crew_calls_enhanced', production_id=production.id) }}">Crew calls</a>
+        <form method="post" action="{{ url_for('production_extensions.delete_performance_enhanced', production_id=production.id, performance_id=performance.id) }}" data-confirm-delete data-confirm-message="{% if performance_assignment_counts[performance.id] %}Volunteers are assigned to this performance. Are you sure you want to delete this performance?{% else %}Are you sure you want to delete this performance?{% endif %}">
+          <input type="hidden" name="confirmed" value="no"><button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+        </form>
+        {% if performance.id in performance_overlap_ids %}<span class="text-danger" role="status">⚠ Please note: multiple performances are scheduled at the same time.</span>{% endif %}
+      </td>
+    </tr>
+  {% else %}<tr><td colspan="5" class="text-muted">No performances yet.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% include "productions/_delete_confirmation.html" %}
+{% endblock %}

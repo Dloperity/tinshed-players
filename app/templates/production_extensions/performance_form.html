@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Add performance · {{ production.title }}{% endblock %}
+{% block content %}
+{% include "productions/_control_assets.html" %}
+<h1 class="h3 mb-3">Add performance — {{ production.title }}</h1>
+{% if errors %}<div class="text-danger mb-3" role="alert">{% for error in errors %}<div>{{ error }}</div>{% endfor %}</div>{% endif %}
+<form method="post" data-time-range-form data-crew-call-form data-require-role>
+  <div class="mb-3"><label class="form-label" for="date">Date <span aria-hidden="true">*</span></label><input class="form-control" id="date" name="date" type="date" required value="{{ form_values.get('date', '') if form_values else '' }}"></div>
+  <div class="mb-3"><label class="form-label" for="start_time">Start time <span aria-hidden="true">*</span></label><input class="form-control" id="start_time" name="start_time" type="time" required value="{{ form_values.get('start_time', '') if form_values else '' }}"></div>
+  <div class="mb-3"><label class="form-label" for="duration_minutes">Duration (minutes) <span aria-hidden="true">*</span></label><input class="form-control" id="duration_minutes" name="duration_minutes" type="number" min="1" step="1" required value="{{ form_values.get('duration_minutes', '') if form_values else '' }}"><div class="form-text" data-time-range-preview>Enter a start time and duration to see the time range.</div></div>
+  <fieldset class="mb-3"><legend class="h5">Crew call (roles and required headcount)</legend>
+    <div class="text-danger mb-2" data-crew-call-error role="alert" hidden></div>
+    <div data-crew-call-list>
+    {% for row in crew_call_rows %}<div class="row g-2 mb-2 align-items-center" data-crew-call-row>
+      <div class="col-12 col-md-8"><label class="visually-hidden" for="role-{{ loop.index }}">Role</label><input class="form-control form-control-sm" id="role-{{ loop.index }}" name="role" maxlength="80" placeholder="Role, e.g. Sound Operator" value="{{ row.role }}"></div>
+      <div class="col-12 col-md-3"><div class="input-group input-group-sm"><button class="btn btn-outline-secondary" type="button" data-count-step="-1" aria-label="Decrease headcount">−</button><input class="form-control" name="count" type="text" inputmode="numeric" aria-label="Required headcount" value="{{ row.count }}"><button class="btn btn-outline-secondary" type="button" data-count-step="1" aria-label="Increase headcount">+</button></div></div>
+      <div class="col-12 col-md-1 d-grid"><button class="btn btn-sm btn-outline-danger" type="button" data-remove-crew-row aria-label="Remove role">Remove</button></div>
+    </div>{% endfor %}
+    </div>
+    <template data-crew-row-template><div class="row g-2 mb-2 align-items-center" data-crew-call-row><div class="col-12 col-md-8"><label class="visually-hidden">Role</label><input class="form-control form-control-sm" name="role" maxlength="80" placeholder="Role, e.g. Sound Operator"></div><div class="col-12 col-md-3"><div class="input-group input-group-sm"><button class="btn btn-outline-secondary" type="button" data-count-step="-1" aria-label="Decrease headcount">−</button><input class="form-control" name="count" type="text" inputmode="numeric" aria-label="Required headcount" value="0"><button class="btn btn-outline-secondary" type="button" data-count-step="1" aria-label="Increase headcount">+</button></div></div><div class="col-12 col-md-1 d-grid"><button class="btn btn-sm btn-outline-danger" type="button" data-remove-crew-row aria-label="Remove role">Remove</button></div></div></template>
+    <button class="btn btn-outline-secondary" type="button" data-add-crew-row>Add role</button>
+  </fieldset>
+  <button class="btn btn-primary" type="submit">Save performance</button> <a class="btn btn-link" href="{{ url_for('production_extensions.manage_production_enhanced', production_id=production.id) }}">Cancel</a>
+</form>
+{% endblock %}

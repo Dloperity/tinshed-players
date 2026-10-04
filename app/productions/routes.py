@@ -35,29 +35,14 @@ def production_detail(production_id):
 
 @bp.route("/productions/<int:production_id>/performances/new", methods=["GET", "POST"])
 def create_performance(production_id):
-    production = db.get_or_404(Production, production_id)
-    if request.method == "POST":
-        try:
-            date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
-            start_time = datetime.strptime(request.form["start_time"], "%H:%M").time()
-        except (KeyError, ValueError):
-            flash("Date and start time are required (YYYY-MM-DD, HH:MM).", "error")
-            return render_template("productions/performance_form.html", production=production), 400
-        performance = Performance(production=production, date=date, start_time=start_time)
-        roles = request.form.getlist("role")
-        counts = request.form.getlist("count")
-        for role, count in zip(roles, counts):
-            if role.strip():
-                performance.crew_calls.append(
-                    CrewCall(role=role.strip(), count=int(count or 1))
-                )
-        db.session.add(performance)
-        db.session.commit()
-        return redirect(url_for("productions.production_detail", production_id=production.id))
-    return render_template("productions/performance_form.html", production=production)
+    # Keep the original URL/endpoint for existing callers, but use the
+    # duration-aware form and validation as the single implementation.
+    from app.production_extensions import create_performance_enhanced
+
+    return create_performance_enhanced(production_id)
 
 
-# Non-destructive A2 extension: existing routes above remain unchanged.
+# A2 Production-management routes supplement the duration-aware create route.
 @bp.route("/productions/<int:production_id>/manage")
 def manage_production(production_id):
     production = db.get_or_404(Production, production_id)

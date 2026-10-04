@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -40,11 +41,31 @@ class Performance(db.Model):
     production_id = db.Column(db.Integer, db.ForeignKey("productions.id"), nullable=False)
     date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.Time, nullable=False)
+    # Nullable so existing databases can be upgraded without inventing a duration.
+    duration_minutes = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     production = db.relationship("Production", back_populates="performances")
     crew_calls = db.relationship("CrewCall", back_populates="performance", cascade="all, delete-orphan")
     assignments = db.relationship("Assignment", back_populates="performance", cascade="all, delete-orphan")
+
+    @property
+    def starts_at(self):
+        return datetime.combine(self.date, self.start_time)
+
+    @property
+    def ends_at(self):
+        if self.duration_minutes is None or self.duration_minutes <= 0:
+            return None
+        return self.starts_at + timedelta(minutes=self.duration_minutes)
+
+    @property
+    def time_range(self):
+        if self.ends_at is None:
+            return None
+        days_later = (self.ends_at.date() - self.date).days
+        end_suffix = f" (+{days_later} day{'s' if days_later != 1 else ''})" if days_later else ""
+        return f"{self.start_time.strftime('%H:%M')} - {self.ends_at.strftime('%H:%M')}{end_suffix}"
 
 
 class CrewCall(db.Model):

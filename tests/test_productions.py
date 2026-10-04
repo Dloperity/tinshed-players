@@ -14,6 +14,7 @@ def test_create_performance_with_crew_call(client, seed):
         data={
             "date": "2026-09-05",
             "start_time": "14:00",
+            "duration_minutes": "90",
             "role": ["Lighting Op", "Usher"],
             "count": ["1", "2"],
         },
@@ -22,6 +23,15 @@ def test_create_performance_with_crew_call(client, seed):
     assert response.status_code == 200
     assert b"Lighting Op" in response.data
     assert b"Usher x2" in response.data
+
+
+def test_original_add_performance_url_uses_duration_aware_dynamic_form(client, seed):
+    response = client.get(f"/productions/{seed['production'].id}/performances/new")
+
+    assert response.status_code == 200
+    assert b"Duration (minutes)" in response.data
+    assert b"Add role" in response.data
+    assert response.data.count(b"data-crew-call-row") == 2
 
 
 def test_performances_listed_in_order(client, app, seed):

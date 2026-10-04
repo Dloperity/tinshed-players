@@ -24,4 +24,7 @@
     {% endfor %}
   </tbody>
 </table>
+<div class="mt-3">
+  <a class="btn btn-outline-secondary" href="{{ url_for('production_extensions.manage_production_enhanced', production_id=production.id) }}">Open production management tools</a>
+</div>
 {% endblock %}

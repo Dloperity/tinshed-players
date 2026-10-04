@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Edit crew role · {{ production.title }}{% endblock %}
+{% block content %}
+{% include "productions/_control_assets.html" %}
+<h1 class="h3 mb-3">Edit crew role — {{ performance.date.strftime('%d %b %Y') }}</h1>
+{% if error_message %}<p class="text-danger" role="alert">{{ error_message }}</p>{% endif %}
+<form method="post"><div class="mb-3"><label class="form-label" for="role">Role</label><input class="form-control" id="role" name="role" maxlength="80" required value="{{ form_values.get('role') if form_values else crew_call.role }}"></div>
+<div class="mb-3"><label class="form-label" for="count">Required headcount</label><div class="input-group" style="max-width: 260px"><button class="btn btn-outline-secondary" type="button" data-count-step="-1" aria-label="Decrease headcount">−</button><input class="form-control" id="count" name="count" type="text" inputmode="numeric" value="{{ form_values.get('count') if form_values else crew_call.count }}"><button class="btn btn-outline-secondary" type="button" data-count-step="1" aria-label="Increase headcount">+</button></div></div>
+<button class="btn btn-primary" type="submit">Save changes</button> <a class="btn btn-link" href="{{ url_for('production_extensions.manage_crew_calls_enhanced', production_id=production.id) }}">Cancel</a></form>
+{% endblock %}

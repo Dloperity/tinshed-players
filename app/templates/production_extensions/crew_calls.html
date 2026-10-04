@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Crew calls · {{ production.title }}{% endblock %}
+{% block content %}
+{% include "productions/_control_assets.html" %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3">Crew calls — {{ production.title }}</h1><a class="btn btn-outline-secondary" href="{{ url_for('production_extensions.manage_production_enhanced', production_id=production.id) }}">Back to management</a></div>
+{% if error_message %}<p class="text-danger" role="alert">{{ error_message }}</p>{% endif %}
+{% for performance in production.performances %}<section class="card mb-3"><div class="card-header">{{ performance.date.strftime('%d %b %Y') }} · {{ performance.time_range or performance.start_time.strftime('%H:%M') }}</div><div class="card-body">
+  <form method="post" class="row g-2 mb-3" data-crew-call-form data-require-role>
+    <input type="hidden" name="performance_id" value="{{ performance.id }}"><div class="col-md-5"><label class="visually-hidden" for="role-{{ performance.id }}">Role</label><input class="form-control" id="role-{{ performance.id }}" name="role" maxlength="80" placeholder="Role, e.g. Sound Operator" required></div>
+    <div class="col-md-4"><div class="input-group"><button class="btn btn-outline-secondary" type="button" data-count-step="-1" aria-label="Decrease headcount">−</button><input class="form-control" name="count" type="text" inputmode="numeric" aria-label="Required headcount" value="0"><button class="btn btn-outline-secondary" type="button" data-count-step="1" aria-label="Increase headcount">+</button></div></div><div class="col-md-3"><button class="btn btn-primary" type="submit">Add role</button></div>
+    <div class="col-12 text-danger" data-crew-call-error role="alert" hidden></div>
+  </form>
+  {% for call in performance.crew_calls %}<div class="d-flex justify-content-between align-items-center border-top py-2"><span>{{ call.role }} × {{ call.count }}</span><span class="d-flex gap-2"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('production_extensions.edit_crew_call_enhanced', production_id=production.id, performance_id=performance.id, crew_call_id=call.id) }}">Edit</a><form method="post" action="{{ url_for('production_extensions.delete_crew_call_enhanced', production_id=production.id, performance_id=performance.id, crew_call_id=call.id) }}" data-confirm-delete data-confirm-message="Are you sure you want to delete this crew-call role?"><input type="hidden" name="confirmed" value="no"><button class="btn btn-sm btn-outline-danger" type="submit">Delete</button></form></span></div>{% else %}<p class="text-muted mb-0">No crew roles yet.</p>{% endfor %}
+</div></section>{% else %}<p class="text-muted">Create a performance before adding crew calls.</p>{% endfor %}
+{% include "productions/_delete_confirmation.html" %}
+{% endblock %}

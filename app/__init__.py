@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template
 
 from app.models import db
+from app.schema_migrations import ensure_performance_duration_column
 
 
 def create_app(test_config=None):
@@ -20,10 +21,12 @@ def create_app(test_config=None):
     from app.assignments.routes import bp as assignments_bp
     from app.productions.routes import bp as productions_bp
     from app.volunteers.routes import bp as volunteers_bp
+    from app.production_extensions import bp as production_extensions_bp
 
     app.register_blueprint(volunteers_bp)
     app.register_blueprint(productions_bp)
     app.register_blueprint(assignments_bp)
+    app.register_blueprint(production_extensions_bp)
 
     @app.route("/")
     def index():
@@ -31,5 +34,6 @@ def create_app(test_config=None):
 
     with app.app_context():
         db.create_all()
+        ensure_performance_duration_column(db.engine)
 
     return app
