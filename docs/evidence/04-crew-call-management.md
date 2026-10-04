@@ -4,7 +4,8 @@
 
 **Developer:** Jiachen Li (Productions module)
 
-**Working branch:** `productions-a2` (local; review before any push)
+**Development branch:** `productions-a2` (local work branch; published counterpart:
+`New-module-development` in the personal `Dloperity/tinshed-players` repository)
 
 ## Progress review
 
@@ -53,5 +54,14 @@ security policy. Therefore no PNG file is claimed as a repository artifact;
 the screenshot should be manually saved from the conversation if a local image
 file is required for the final evidence pack.
 
-Git state at handoff: changes remain uncommitted on local `productions-a2` for
-review. Nothing was pushed to GitHub in this step.
+## Publication record
+
+At the initial handoff, this increment was still uncommitted on local
+`productions-a2`; no push had taken place at that point. It was subsequently
+committed as `23007776a8fc6e42990d52107666c31c8c05ed93` on 2026-10-04 and pushed
+to the personal repository's `New-module-development` branch. The team
+repository `ThirstyCoco/tinshed-players` was not changed by that push.
+
+This record update is being made after publication to correct the handoff
+status while retaining the original sequence of events. It has not yet been
+committed or pushed.
